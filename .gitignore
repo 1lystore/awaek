@@ -1,0 +1,40 @@
+# Local agent/editor state
+.claude/
+.vscode/
+.cursor/
+.idea/
+
+# Local data and generated databases
+data/
+**/data/
+*.db
+*.db-shm
+*.db-wal
+
+# Python/cache
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS/local env
+.DS_Store
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+
+# Personal/private scratch files
+private/
+personal/
+scratch/
+tmp/
+prd.md
+MVP_prd.md
+*.local
+*.secret
+*.key
+*.pem
