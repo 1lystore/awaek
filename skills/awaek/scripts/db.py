@@ -794,6 +794,7 @@ def search_chunks(query, limit=30, topics=None):
     try:
         if not fts_query:
             return []
+        author_rows = search_author_matches(con, query, limit, topics=topics)
         topic_filter = [t for t in (topics or []) if t]
         topic_sql = ""
         params = [fts_query]
@@ -830,11 +831,93 @@ def search_chunks(query, limit=30, topics=None):
             """,
             params,
         ).fetchall()
-        return [normalize_search_row(row) for row in rows]
+        return merge_search_rows(author_rows, [normalize_search_row(row) for row in rows], limit)
     except sqlite3.OperationalError:
         return search(query, limit=limit, topics=topics)
     finally:
         con.close()
+
+
+def search_author_matches(con, query, limit=10, topics=None):
+    terms = author_search_terms(query)
+    if not terms:
+        return []
+    topic_filter = [t for t in (topics or []) if t]
+    topic_sql = ""
+    topic_params = []
+    if topic_filter:
+        placeholders = ",".join("?" for _ in topic_filter)
+        topic_sql = (
+            "AND b.id IN (SELECT bookmark_id FROM bookmark_topics "
+            f"WHERE topic_id IN ({placeholders}) "
+            f"OR topic_id IN (SELECT id FROM topics WHERE parent_id IN ({placeholders})))"
+        )
+        topic_params.extend(topic_filter)
+        topic_params.extend(topic_filter)
+    conditions = []
+    condition_params = []
+    for term in terms[:8]:
+        like = f"%{term}%"
+        conditions.append(
+            "(lower(b.author_username) LIKE ? OR lower(b.author_name) LIKE ? OR lower(b.url) LIKE ?)"
+        )
+        condition_params.extend([like, like, like])
+    order_params = terms[:8] + terms[:8]
+    rows = con.execute(
+        f"""
+        SELECT
+          b.id, b.tweet_id, b.url, b.author_username, b.author_name,
+          b.text, b.tweet_created_at, b.bookmarked_at,
+          0 AS chunk_index,
+          b.text AS chunk_text,
+          substr(b.text, 1, 260) AS chunk_summary,
+          'source' AS chunk_role,
+          estimate AS chunk_token_estimate,
+          -100.0 AS chunk_score,
+          (
+            SELECT GROUP_CONCAT(topic_id)
+            FROM bookmark_topics
+            WHERE bookmark_id = b.id
+          ) AS topics
+        FROM bookmarks b
+        CROSS JOIN (SELECT 0 AS estimate)
+        WHERE ({" OR ".join(conditions)})
+        {topic_sql}
+        ORDER BY
+          CASE
+            WHEN lower(b.author_username) IN ({",".join("?" for _ in terms[:8])}) THEN 0
+            WHEN lower(b.author_name) IN ({",".join("?" for _ in terms[:8])}) THEN 1
+            ELSE 2
+          END,
+          b.tweet_created_at DESC
+        LIMIT ?
+        """,
+        condition_params + topic_params + order_params + [limit],
+    ).fetchall()
+    return [normalize_search_row(row) for row in rows]
+
+
+def author_search_terms(query):
+    tokens = [token.lower() for token in re.findall(r"[A-Za-z0-9_@.]+", query or "")]
+    terms = []
+    for token in tokens:
+        token = token.strip("@.")
+        if len(token) < 3 or token in STOP_TERMS:
+            continue
+        if token in {"ceo", "founder", "post", "posts", "said", "about", "tell"}:
+            continue
+        terms.append(token)
+    return dedupe_preserve_order(terms)
+
+
+def merge_search_rows(primary, secondary, limit):
+    merged = {}
+    for row in list(primary or []) + list(secondary or []):
+        key = row.get("tweet_id") or row.get("url") or row.get("id")
+        if not key or key in merged:
+            continue
+        merged[key] = row
+    return list(merged.values())[:limit]
 
 
 def normalize_search_row(row):
@@ -845,6 +928,17 @@ def normalize_search_row(row):
     elif not topics:
         item["topics"] = []
     return item
+
+
+def dedupe_preserve_order(values):
+    seen = set()
+    output = []
+    for value in values:
+        if value in seen:
+            continue
+        seen.add(value)
+        output.append(value)
+    return output
 
 
 def learned_candidates(limit=30, min_count=2):

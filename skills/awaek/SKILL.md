@@ -197,6 +197,17 @@ python3 ${HERMES_SKILL_DIR}/scripts/search.py "<query>" --limit 20
 
 Return matching saved posts with author, snippet, and URL. Do not synthesize unless the user asks.
 
+For person, company, role, or handle lookups, resolve the specific name/handle before searching when it is obvious from general knowledge or the user's wording.
+
+Examples of lookup intent:
+
+- "Jeremy CEO post"
+- "what did Circle CEO say"
+- "show the saved post from @jerallaire"
+- "find the saved post by the founder of X"
+
+For these, search exact identifiers first: person name, handle, company, and the user's topic words. If the user says "CEO/founder of <company>" and the person is known, include the person's name and handle in the search. Do not replace an exact person/handle result with adjacent topic posts.
+
 ## Topic Inspection
 
 For "Awaek topics", "Awaek scopes", or "What am I saving?", run:
