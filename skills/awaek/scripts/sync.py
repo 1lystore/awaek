@@ -142,6 +142,7 @@ def normalize_record(record):
         "tweet_created_at": created_at,
         "bookmarked_at": bookmarked_at,
         "raw_json": None,
+        "links": extract_links(record),
     }
 
 
@@ -205,6 +206,7 @@ def extract_xurl_bookmarks(raw, limit=None):
                     "tweet_created_at": tweet.get("created_at"),
                     "bookmarked_at": None,
                     "raw_json": None,
+                    "links": extract_links(tweet),
                 }
             )
             if limit and len(records) >= limit:
@@ -218,6 +220,84 @@ def extract_tweet_text(tweet):
         return note_text.strip()
     text = tweet.get("text")
     return text.strip() if isinstance(text, str) else ""
+
+
+def extract_links(record):
+    links = []
+    seen = set()
+    candidates = []
+    entities = record.get("entities") if isinstance(record, dict) else None
+    note_entities = deep_get(record, "note_tweet.entities")
+    if isinstance(entities, dict):
+        candidates.extend(entities.get("urls") or [])
+    if isinstance(note_entities, dict):
+        candidates.extend(note_entities.get("urls") or [])
+
+    for item in candidates:
+        if not isinstance(item, dict):
+            continue
+        url = item.get("expanded_url") or item.get("url")
+        if not isinstance(url, str) or not url.strip() or url in seen:
+            continue
+        seen.add(url)
+        links.append(
+            {
+                "url": item.get("url"),
+                "expanded_url": item.get("expanded_url") or item.get("url"),
+                "display_url": item.get("display_url"),
+            }
+        )
+    for url in extract_text_links(record):
+        if url in seen:
+            continue
+        seen.add(url)
+        links.append({"url": url, "expanded_url": url, "display_url": url.removeprefix("https://")[:80]})
+    return links
+
+
+def extract_text_links(record):
+    text_parts = []
+    for value in [
+        first_string(record, ["text", "full_text", "content", "data.text", "legacy.full_text"]),
+        deep_get(record, "note_tweet.text"),
+    ]:
+        if isinstance(value, str):
+            text_parts.append(value)
+    text = "\n".join(text_parts)
+    if not text:
+        return []
+
+    matches = re.findall(
+        r"(?i)\b(?:https?://)?(?:[a-z0-9-]+\.)+(?:com|org|io|xyz|site)(?:/[^\s)\]>\"']*)?",
+        text,
+    )
+    links = []
+    seen = set()
+    for match in matches:
+        url = match.rstrip(".,;:")
+        if not url.startswith(("http://", "https://")):
+            url = f"https://{url}"
+        if url not in seen:
+            seen.add(url)
+            links.append(url)
+    return links
+
+
+def page_meta(raw):
+    pages = []
+    if isinstance(raw, dict) and raw.get("source") == "xurl":
+        pages = raw.get("pages") or []
+    elif isinstance(raw, dict):
+        pages = [raw]
+    meta = {}
+    for page in pages:
+        if isinstance(page, dict) and isinstance(page.get("meta"), dict):
+            meta = page["meta"]
+    return {
+        "result_count": meta.get("result_count"),
+        "next_token": meta.get("next_token"),
+        "previous_token": meta.get("previous_token"),
+    }
 
 
 def main():
@@ -262,6 +342,7 @@ def main():
     upsert = db.upsert_bookmarks(bookmarks)
     with_text = sum(1 for b in bookmarks if b.get("text"))
     with_url = sum(1 for b in bookmarks if b.get("url") or b.get("tweet_id"))
+    meta = page_meta(raw)
     payload = {
         "ok": True,
         "source": source,
@@ -269,6 +350,8 @@ def main():
         "fetched_normalized": len(bookmarks),
         "records_with_text": with_text,
         "records_with_url_or_tweet_id": with_url,
+        "page_meta": meta,
+        "next_token": meta.get("next_token"),
         "upsert": upsert,
         "db": db.stats(),
     }

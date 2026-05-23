@@ -18,6 +18,9 @@ def main():
         payload["learned_candidates"] = db.learned_candidates(
             limit=args.limit, min_count=args.min_count
         )
+        payload["learned_category_suggestions"] = db.learned_topic_summary(
+            limit=args.limit, min_count=args.min_count
+        )
     print(json.dumps(payload, indent=2))
 
 

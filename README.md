@@ -10,7 +10,7 @@ No hosted backend. No pasted X secrets. Your bookmark library lives locally in S
 
 ```text
 Awaek, what do my saves say about AI agents?
-Awaek, find the post I saved about x402 payments.
+Awaek, find the post I saved about pricing.
 Awaek, use my launch bookmarks to make a 30-day plan.
 Awaek, draft 20 X posts from my saved growth posts.
 ```
@@ -46,9 +46,12 @@ Awaek:
 - drafts tweets, threads, plans, and decisions grounded in your library
 - surfaces old saves you forgot you had
 - shows what topics you keep saving
+- breaks long saved posts into searchable evidence chunks
+- tells Hermes when saved evidence is strong, weak, or missing
+- learns repeated niche themes from your saves
 - makes answers cite and follow your saved-post evidence
 
-Under the hood, Awaek syncs via `xurl`, stores locally in SQLite, categorizes bookmarks, and builds evidence packs Hermes Agent can cite.
+Under the hood, Awaek syncs via `xurl`, stores locally in SQLite, categorizes bookmarks, chunks long posts, tracks links from reputable domains, and builds evidence packs Hermes Agent can cite.
 
 ## Install
 
@@ -115,7 +118,7 @@ In Hermes, ask:
 Awaek sync
 ```
 
-On sync, Awaek fetches up to 100 recent saved X bookmarks in the current version, stores them in SQLite, categorizes them, and builds the local search index.
+On sync, Awaek fetches saved X bookmarks page by page, stores them in SQLite, categorizes them, chunks long posts into searchable evidence, tracks links from safe domains, and builds the local search index.
 
 Then try:
 
@@ -124,6 +127,8 @@ Awaek, what do my saves say about marketing?
 Awaek, show my bookmark topics.
 Awaek, find my saved posts about pricing.
 ```
+
+After setup, Hermes reports how many bookmarks were indexed, how many searchable evidence chunks were created, which topics were found, and which repeated niche themes Awaek noticed.
 
 ## Privacy
 
@@ -137,8 +142,7 @@ Awaek is local-first. It stores your bookmark library locally.
 
 ## Roadmap
 
-- Better topic learning from saved posts
-- Smarter evidence packing for large bookmark libraries
 - Sample mode for trying Awaek without X setup
 - More saved-source connectors beyond X
 - Richer writing and style workflows
+- Optional link hydration for safe/reputable domains
