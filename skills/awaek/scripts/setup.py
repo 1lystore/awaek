@@ -15,6 +15,7 @@ def health_payload():
         "sqlite_fts5_available": db.validate_fts5(),
         "commands": {
             "hermes": health.command_version("hermes"),
+            "openclaw": health.command_version("openclaw"),
             "xurl": health.command_version("xurl"),
             "python3": health.command_version("python3"),
         },

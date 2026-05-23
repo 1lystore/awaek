@@ -26,6 +26,7 @@ def main():
         "sqlite_fts5_available": db.validate_fts5(),
         "commands": {
             "hermes": command_version("hermes"),
+            "openclaw": command_version("openclaw"),
             "xurl": command_version("xurl"),
             "python3": command_version("python3"),
         },

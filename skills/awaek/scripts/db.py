@@ -9,8 +9,18 @@ from urllib.parse import urlparse
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATA_DIR = Path("~/.hermes/awaek/data").expanduser()
-DATA_DIR = DEFAULT_DATA_DIR
+NEUTRAL_DATA_DIR = Path("~/.awaek/data").expanduser()
+LEGACY_HERMES_DATA_DIR = Path("~/.hermes/awaek/data").expanduser()
+
+
+def default_data_dir():
+    legacy_db = LEGACY_HERMES_DATA_DIR / "awaek.db"
+    if legacy_db.exists():
+        return LEGACY_HERMES_DATA_DIR
+    return NEUTRAL_DATA_DIR
+
+
+DATA_DIR = default_data_dir()
 DB_PATH = DATA_DIR / "awaek.db"
 
 
@@ -894,7 +904,17 @@ def search_author_matches(con, query, limit=10, topics=None):
         """,
         condition_params + topic_params + order_params + [limit],
     ).fetchall()
-    return [normalize_search_row(row) for row in rows]
+    scored_rows = []
+    for row in rows:
+        result = normalize_search_row(row)
+        match_score = author_candidate_score(result, terms)
+        result["score"] = -100.0 - match_score
+        result["chunk_score"] = result["score"]
+        for evidence in result.get("evidence", []):
+            evidence["score"] = result["score"]
+        scored_rows.append((match_score, result.get("tweet_created_at") or "", result))
+    scored_rows.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    return [item[2] for item in scored_rows]
 
 
 def author_search_terms(query):
@@ -908,6 +928,28 @@ def author_search_terms(query):
             continue
         terms.append(token)
     return dedupe_preserve_order(terms)
+
+
+def author_candidate_score(row, terms):
+    username = (row.get("author_username") or "").lower()
+    name = (row.get("author_name") or "").lower()
+    url = (row.get("url") or "").lower()
+    text = (row.get("text") or "").lower()
+    score = 0
+    for term in terms:
+        term_score = 0
+        if username == term or username == term.lstrip("@"):
+            term_score = max(term_score, 8)
+        elif term in username:
+            term_score = max(term_score, 5)
+        if term in name:
+            term_score = max(term_score, 6)
+        if term in url:
+            term_score = max(term_score, 1)
+        if term in text:
+            term_score = max(term_score, 2)
+        score += term_score
+    return score
 
 
 def merge_search_rows(primary, secondary, limit):

@@ -26,7 +26,8 @@ For normal Awaek questions, retrieve local bookmark evidence first, then answer 
 
 ## Core Rules
 
-- Awaek is local-first. Bookmark data lives in `~/.hermes/awaek/data/awaek.db`.
+- Awaek is local-first. New installs store bookmark data in `~/.awaek/data/awaek.db`.
+- Existing Hermes installs may keep using `~/.hermes/awaek/data/awaek.db`; the scripts detect that automatically.
 - X access is handled by the local `xurl` CLI.
 - Never read, print, summarize, upload, or inspect `~/.xurl`.
 - Never ask the user to paste X Client IDs, Client Secrets, access tokens, refresh tokens, or `~/.xurl` contents into chat.

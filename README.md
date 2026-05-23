@@ -4,15 +4,14 @@
 
 Everyone saves good posts. Almost nobody uses them later. Awaek fixes that.
 
-Awaek turns your saved X posts into a personal AI you can chat with — running locally inside your Hermes Agent. Ask questions, find old saves, draft content, compare ideas, or plan launches grounded in the links and posts you already curated.
+Awaek turns your saved X posts into a personal AI you can chat with — running locally inside Hermes Agent or OpenClaw. Ask questions, find old saves, draft content, compare ideas, or plan launches grounded in the links and posts you already curated.
 
 No hosted backend. No pasted X secrets. Your bookmark library lives locally in SQLite.
 
 ```text
 Awaek, what do my saves say about AI agents?
-Awaek, find the post I saved about pricing.
 Awaek, use my launch bookmarks to make a 30-day plan.
-Awaek, draft 20 X posts from my saved growth posts.
+Awaek, draft 5 X posts from my saved growth posts.
 ```
 
 ## Demo
@@ -47,11 +46,11 @@ Awaek:
 - surfaces old saves you forgot you had
 - shows what topics you keep saving
 - breaks long saved posts into searchable evidence chunks
-- tells Hermes when saved evidence is strong, weak, or missing
+- tells your agent when saved evidence is strong, weak, or missing
 - learns repeated niche themes from your saves
 - makes answers cite and follow your saved-post evidence
 
-Under the hood, Awaek syncs via `xurl`, stores locally in SQLite, categorizes bookmarks, chunks long posts, tracks links from reputable domains, and builds evidence packs Hermes Agent can cite.
+Under the hood, Awaek syncs via `xurl`, stores locally in SQLite, categorizes bookmarks, chunks long posts, tracks links from reputable domains, and builds evidence packs your AI agent can cite.
 
 ## Install
 
@@ -63,13 +62,27 @@ Install Awaek from 1lystore/awaek/skills/awaek and set it up for my saved X book
 
 You can send that in any Hermes chat: terminal, Telegram, Slack, Discord, or Open Web.
 
-Or install from terminal:
+Ask OpenClaw:
+
+```text
+Install Awaek from git:1lystore/awaek and set it up for my saved X bookmarks.
+```
+
+Or install from terminal.
+
+Hermes:
 
 ```bash
 hermes skills install 1lystore/awaek/skills/awaek
 ```
 
-Restart Hermes or run:
+OpenClaw:
+
+```bash
+openclaw skills install git:1lystore/awaek
+```
+
+Restart your agent session or run:
 
 ```text
 /reset
@@ -89,11 +102,21 @@ Awaek sync
 
 ## Requirements
 
-- Hermes Agent
+- Hermes Agent or OpenClaw
 - Python 3
 - `xurl` authenticated with an X account that can read bookmarks
 
-`xurl` is the X API CLI used by Hermes to read and write X through the official API. The setup flow is covered here:
+`xurl` is the X API CLI Awaek uses to read saved X bookmarks through the official API.
+
+OpenClaw ships an official `xurl` skill:
+
+https://github.com/openclaw/openclaw/blob/main/skills/xurl/SKILL.md
+
+If you use OpenClaw with Grok, set up the xAI provider here:
+
+https://docs.openclaw.ai/providers/xai
+
+For X bookmark sync, install and authenticate `xurl`. The Hermes + xurl setup flow is covered here:
 
 https://x.com/XDevelopers/status/2056871280599847054
 
@@ -112,7 +135,7 @@ xurl whoami
 
 ## Sync Bookmarks
 
-In Hermes, ask:
+In Hermes or OpenClaw, ask:
 
 ```text
 Awaek sync
@@ -125,16 +148,17 @@ Then try:
 ```text
 Awaek, what do my saves say about marketing?
 Awaek, show my bookmark topics.
-Awaek, find my saved posts about pricing.
+Awaek, find my saved posts about business automation.
 ```
 
-After setup, Hermes reports how many bookmarks were indexed, how many searchable evidence chunks were created, which topics were found, and which repeated niche themes Awaek noticed.
+After setup, your agent reports how many bookmarks were indexed, how many searchable evidence chunks were created, which topics were found, and which repeated niche themes Awaek noticed.
 
 ## Privacy
 
 Awaek is local-first. It stores your bookmark library locally.
 
-- Bookmark data is stored at `~/.hermes/awaek/data/awaek.db`
+- Bookmark data is stored at `~/.awaek/data/awaek.db` for new installs
+- Existing Hermes installs may continue using `~/.hermes/awaek/data/awaek.db`
 - No hosted backend
 - No cloud database
 - No pasted X secrets
