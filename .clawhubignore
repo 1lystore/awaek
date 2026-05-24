@@ -1,0 +1,40 @@
+# Keep ClawHub skill packages text-only and scanner-friendly.
+img/
+
+# Local/editor state.
+.git/
+.claude/
+.vscode/
+.cursor/
+.idea/
+.DS_Store
+
+# Private scratch and local data.
+Bookmarks.md
+prd.md
+MVP_prd.md
+private/
+personal/
+scratch/
+tmp/
+data/
+**/data/
+*.db
+*.db-shm
+*.db-wal
+
+# Python/cache.
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Secrets/env.
+.env
+.env.*
+*.local
+*.secret
+*.key
+*.pem
