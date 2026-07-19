@@ -133,6 +133,20 @@ xurl auth status
 xurl whoami
 ```
 
+## Optional Hermes Tweet Context
+
+Hermes users can install Hermes Tweet as a companion plugin:
+https://github.com/Xquik-dev/hermes-tweet
+
+Keep `xurl` as Awaek's source of truth for private bookmark sync. Use Hermes
+Tweet only for read-only public context around saved posts, such as public tweet
+reads, replies, user lookup, trends, and keyword monitoring. This is useful when
+a bookmark needs current public discussion or profile context before drafting.
+
+Hermes Tweet read tools use `XQUIK_API_KEY`. Leave
+`HERMES_TWEET_ENABLE_ACTIONS` unset for Awaek workflows so write actions remain
+unavailable.
+
 ## Sync Bookmarks
 
 In Hermes or OpenClaw, ask:

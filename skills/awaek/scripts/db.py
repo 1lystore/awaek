@@ -3,6 +3,7 @@ import argparse
 import json
 import re
 import sqlite3
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -1117,6 +1118,40 @@ def make_fts_query(query):
     return " OR ".join(tokens[:12])
 
 
+def run_self_test():
+    global DATA_DIR, DB_PATH
+
+    configured_data_dir = DATA_DIR
+    configured_db_path = DB_PATH
+    try:
+        with tempfile.TemporaryDirectory(prefix="awaek-self-test-") as temp_dir:
+            DATA_DIR = Path(temp_dir)
+            DB_PATH = DATA_DIR / "awaek.db"
+            init_db()
+            sample = [
+                {
+                    "id": "sample-1",
+                    "tweet_id": "sample-1",
+                    "url": "https://x.com/example/status/sample-1",
+                    "author_username": "example",
+                    "author_name": "Example",
+                    "text": "Marketing launch growth agent payments test bookmark.",
+                    "raw_json": {"sample": True},
+                }
+            ]
+            result = upsert_bookmarks(sample)
+            rows = search("marketing", 5)
+            return {
+                "ok": bool(rows),
+                "isolated": True,
+                "upsert": result,
+                "results": rows,
+            }
+    finally:
+        DATA_DIR = configured_data_dir
+        DB_PATH = configured_db_path
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--init", action="store_true")
@@ -1134,21 +1169,7 @@ def main():
         return
 
     if args.self_test:
-        init_db()
-        sample = [
-            {
-                "id": "sample-1",
-                "tweet_id": "sample-1",
-                "url": "https://x.com/example/status/sample-1",
-                "author_username": "example",
-                "author_name": "Example",
-                "text": "Marketing launch growth agent payments test bookmark.",
-                "raw": {"sample": True},
-            }
-        ]
-        result = upsert_bookmarks(sample)
-        rows = search("marketing", 5)
-        print(json.dumps({"ok": bool(rows), "upsert": result, "results": rows}, indent=2))
+        print(json.dumps(run_self_test(), indent=2))
         return
 
     parser.print_help()

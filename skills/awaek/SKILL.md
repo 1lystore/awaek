@@ -29,6 +29,8 @@ For normal Awaek questions, retrieve local bookmark evidence first, then answer 
 - Awaek is local-first. New installs store bookmark data in `~/.awaek/data/awaek.db`.
 - Existing Hermes installs may keep using `~/.hermes/awaek/data/awaek.db`; the scripts detect that automatically.
 - X access is handled by the local `xurl` CLI.
+- If Hermes Tweet is installed, use it only for read-only public context around saved posts. Do not use it to replace `xurl` bookmark sync.
+- Keep `HERMES_TWEET_ENABLE_ACTIONS` unset during Awaek workflows.
 - Never read, print, summarize, upload, or inspect `~/.xurl`.
 - Never ask the user to paste X Client IDs, Client Secrets, access tokens, refresh tokens, or `~/.xurl` contents into chat.
 - Do not run `xurl` with verbose/debug flags.
@@ -71,6 +73,12 @@ python3 ${HERMES_SKILL_DIR}/scripts/answer_pack.py --plan-stdin --limit 30 <<'JS
 <strict retrieval plan JSON>
 JSON
 ```
+
+Optional public context:
+
+- Use Hermes Tweet after Awaek evidence retrieval when a saved post needs public reply context, author lookup, current trends, or keyword monitoring.
+- Hermes Tweet read tools require `XQUIK_API_KEY`.
+- Do not enable Hermes Tweet action tools for bookmark analysis, drafting, planning, or search.
 
 ## Setup And Sync
 
