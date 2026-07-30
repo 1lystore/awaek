@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-
 ROOT = Path(__file__).resolve().parents[1]
 NEUTRAL_DATA_DIR = Path("~/.awaek/data").expanduser()
 LEGACY_HERMES_DATA_DIR = Path("~/.hermes/awaek/data").expanduser()

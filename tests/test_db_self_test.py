@@ -1,14 +1,14 @@
+import importlib
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
-
 SCRIPT_DIR = Path(__file__).resolve().parents[1] / "skills" / "awaek" / "scripts"
 sys.path.insert(0, str(SCRIPT_DIR))
 
-import db
+db = importlib.import_module("db")
 
 
 class SelfTestIsolationTests(unittest.TestCase):
@@ -27,13 +27,17 @@ class SelfTestIsolationTests(unittest.TestCase):
     def test_self_test_does_not_write_the_configured_database(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             self.configure_unwritten_database(Path(temp_dir))
+            configured_data_dir = db.DATA_DIR
+            configured_db_path = db.DB_PATH
 
             result = db.run_self_test()
 
             self.assertTrue(result["ok"])
             self.assertTrue(result["isolated"])
             self.assertEqual(result["upsert"]["inserted"], 1)
-            self.assertFalse(db.DB_PATH.exists())
+            self.assertEqual(db.DATA_DIR, configured_data_dir)
+            self.assertEqual(db.DB_PATH, configured_db_path)
+            self.assertFalse(configured_data_dir.exists())
 
     def test_self_test_restores_paths_after_failure(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -47,7 +51,7 @@ class SelfTestIsolationTests(unittest.TestCase):
 
             self.assertEqual(db.DATA_DIR, configured_data_dir)
             self.assertEqual(db.DB_PATH, configured_db_path)
-            self.assertFalse(db.DB_PATH.exists())
+            self.assertFalse(configured_data_dir.exists())
 
 
 if __name__ == "__main__":

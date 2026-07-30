@@ -76,7 +76,7 @@ JSON
 
 Optional public context:
 
-- Use Hermes Tweet after Awaek evidence retrieval when a saved post needs public reply context, author lookup, current trends, or keyword monitoring.
+- Use Hermes Tweet after Awaek evidence retrieval when a saved post needs public reply context, author lookup, current trends, or public timelines.
 - Hermes Tweet read tools require `XQUIK_API_KEY`.
 - Do not enable Hermes Tweet action tools for bookmark analysis, drafting, planning, or search.
 

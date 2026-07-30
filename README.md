@@ -140,7 +140,7 @@ https://github.com/Xquik-dev/hermes-tweet
 
 Keep `xurl` as Awaek's source of truth for private bookmark sync. Use Hermes
 Tweet only for read-only public context around saved posts, such as public tweet
-reads, replies, user lookup, trends, and keyword monitoring. This is useful when
+reads, replies, user lookup, trends, and public timelines. This is useful when
 a bookmark needs current public discussion or profile context before drafting.
 
 Hermes Tweet read tools use `XQUIK_API_KEY`. Leave
